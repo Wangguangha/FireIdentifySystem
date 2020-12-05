@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/image">
+        <file>../images/Buzzer.png</file>
+        <file>../images/Error.png</file>
+        <file>../images/LED_OFF.png</file>
+        <file>../images/LED_ON.png</file>
+        <file>../images/Save.png</file>
+        <file>../images/Set.png</file>
+        <file>../images/Time.png</file>
+        <file>../images/Warning.png</file>
+        <file>../images/Wifi.png</file>
+        <file>../images/Fire.png</file>
+        <file>../images/background.jpeg</file>
+        <file>../images/Exit.png</file>
+    </qresource>
+</RCC>
