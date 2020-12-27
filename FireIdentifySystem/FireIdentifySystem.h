@@ -49,6 +49,7 @@ private:
     QSqlDatabase db;                            //数据库文件
     QTcpServer *tcpServer = new QTcpServer();   //Tcp服务端对象
     QTcpSocket *tcpSocket = new QTcpSocket();   //Tcp连接socket
+    QByteArray array;                           //图像文件
 };
 
 #endif // FIREIDENTIFYSYSTEM_H

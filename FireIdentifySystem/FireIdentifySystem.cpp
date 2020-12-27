@@ -14,6 +14,7 @@ QT_CHARTS_USE_NAMESPACE
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QWidget>
+#include <QBuffer>
 #include <QDebug>
 
 //静态变量初始化
@@ -237,10 +238,8 @@ void FireIdentifySystem::serverNewConnect()
 
 void FireIdentifySystem::serverReadData()
 {
-    //服务器数据读取函数
-    char buffer[1024];
-    tcpSocket->read(buffer, 1024);
-    qDebug() << buffer;
+    //服务器接收图像函数
+    array.append((QByteArray)tcpSocket->readAll());
 }
 
 void FireIdentifySystem::serverDisconnection()
@@ -248,5 +247,12 @@ void FireIdentifySystem::serverDisconnection()
     //服务端断开连接
     //QMessageBox::information(this, "QT网络通信", "与客户端断开连接！！！");
     qDebug() << "与客户端断开连接！！！";
+
+    QBuffer buffer(&array);
+    buffer.open(QIODevice::ReadOnly);
+    QPixmap picture;
+    picture.loadFromData(array, "jpg");
+    ui->lab_Picture->setPixmap(picture);
+
     return;
 }
