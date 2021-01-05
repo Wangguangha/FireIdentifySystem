@@ -24,11 +24,20 @@ bool FireIdentifySystem::Net_Switch = false;
 int FireIdentifySystem::Warn_Num = 5;
 int FireIdentifySystem::Error_Num = 5;
 
+static QTextEdit *logTextEdit;              //log输出控件
+
 FireIdentifySystem::FireIdentifySystem(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::FireIdentifySystem)
 {
     ui->setupUi(this);
+
+    //在绑定回调函数之前，需要将控件初始化
+    logTextEdit = new QTextEdit(this);
+    logTextEdit->resize(1082,125);
+    ui->verticalLayout_5->addWidget(logTextEdit,3);
+
+    qInstallMessageHandler(logOutput);      //绑定回调函数
     InitWindow();
 }
 
@@ -40,16 +49,15 @@ FireIdentifySystem::~FireIdentifySystem()
 void FireIdentifySystem::InitWindow()
 {
     //初始化界面
-    on_timer_timeout();
-    on_updateTimer_timeout();
+    timer_timeout();
+    updateTimer_timeout();
     m_timer = new QTimer(this);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(on_timer_timeout()));
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(timer_timeout()));
     m_timer->start(1000);             //每一秒更新一次时间
 
     m_UpdatePictrue = new QTimer(this);
-    connect(m_UpdatePictrue, SIGNAL(timeout()), this, SLOT(on_updateTimer_timeout()));
+    connect(m_UpdatePictrue, SIGNAL(timeout()), this, SLOT(updateTimer_timeout()));
     m_UpdatePictrue->start(5000);     //每五秒更新一次图像
-
 
     //建立tcp连接响应
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(serverNewConnect()));
@@ -99,7 +107,7 @@ void FireIdentifySystem::showCharts()
     ui->chart_Widget->setChart(chart);
 }
 
-void FireIdentifySystem::on_timer_timeout()
+void FireIdentifySystem::timer_timeout()
 {
     //定时更新时间timeout信号发送
     QDateTime curDateTime=QDateTime::currentDateTime();
@@ -107,10 +115,11 @@ void FireIdentifySystem::on_timer_timeout()
     ui->dateTimeEdit->setTime(curDateTime.time());
 }
 
-void FireIdentifySystem::on_updateTimer_timeout()
+void FireIdentifySystem::updateTimer_timeout()
 {
     //定时更新图像timeout信号发送
-    QPixmap *pixmap = new QPixmap(":/image/images/background.jpeg");
+    this->pictureName = ":/image/images/background.jpeg";
+    QPixmap *pixmap = new QPixmap(pictureName);
     pixmap->scaled(ui->lab_Picture->size(), Qt::KeepAspectRatio);
     ui->lab_Picture->setScaledContents(true);
     ui->lab_Picture->setPixmap(*pixmap);
@@ -171,12 +180,6 @@ void FireIdentifySystem::on_tBtn_Network_clicked()
         ui->tBtn_Network->setStyleSheet("background-color:rgb(204, 0, 0)");
     }
     Net_Switch = !Net_Switch;
-}
-
-void FireIdentifySystem::on_tBtn_close_clicked()
-{
-    //关闭按钮槽函数
-    this->close();
 }
 
 void FireIdentifySystem::openDataBase()
@@ -245,7 +248,6 @@ void FireIdentifySystem::serverReadData()
 void FireIdentifySystem::serverDisconnection()
 {
     //服务端断开连接
-    //QMessageBox::information(this, "QT网络通信", "与客户端断开连接！！！");
     qDebug() << "与客户端断开连接！！！";
 
     QBuffer buffer(&array);
@@ -253,6 +255,30 @@ void FireIdentifySystem::serverDisconnection()
     QPixmap picture;
     picture.loadFromData(array, "jpg");
     ui->lab_Picture->setPixmap(picture);
+}
 
-    return;
+void FireIdentifySystem::logOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    //日志重定向
+    QString text;
+    text.append(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " ");
+    switch(type)
+    {
+        case QtDebugMsg:
+            text.append("Debug：");
+            break;
+
+        case QtWarningMsg:
+            text.append("Warning：");
+            break;
+
+        case QtCriticalMsg:
+            text.append("Critical：");
+            break;
+
+        case QtFatalMsg:
+            text.append("Fatal：");
+    }
+    text.append(msg);
+    logTextEdit->append(text);
 }
