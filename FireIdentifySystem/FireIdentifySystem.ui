@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1084</width>
-    <height>555</height>
+    <width>941</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,8 +43,11 @@
         <property name="spacing">
          <number>0</number>
         </property>
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>3</number>
         </property>
         <item>
          <widget class="QWidget" name="gBox_status" native="true">
@@ -66,20 +69,35 @@
            </property>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout" stretch="9">
+             <property name="spacing">
+              <number>0</number>
+             </property>
              <property name="leftMargin">
-              <number>3</number>
+              <number>0</number>
              </property>
              <property name="topMargin">
-              <number>3</number>
+              <number>0</number>
              </property>
              <property name="rightMargin">
-              <number>3</number>
+              <number>0</number>
              </property>
              <property name="bottomMargin">
-              <number>3</number>
+              <number>0</number>
              </property>
              <item>
               <widget class="QLabel" name="lab_Picture">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>

@@ -35,7 +35,7 @@ FireIdentifySystem::FireIdentifySystem(QWidget *parent) :
     //在绑定回调函数之前，需要将控件初始化
     logTextEdit = new QTextEdit(this);
     logTextEdit->resize(1082,125);
-    ui->verticalLayout_5->addWidget(logTextEdit,3);
+    ui->verticalLayout_5->addWidget(logTextEdit,4);
 
     qInstallMessageHandler(logOutput);      //绑定回调函数
     InitWindow();
@@ -143,7 +143,8 @@ void FireIdentifySystem::on_tBtn_LED_clicked()
         //如果开关为关
         ui->tBtn_LED->setIcon(QIcon(":/image/images/LED_ON.png"));
         ui->tBtn_LED->setStyleSheet("background-color:rgb(115, 210, 22)");
-    }else
+    }
+    else
     {
         //如果开关为开
         ui->tBtn_LED->setIcon(QIcon(":/image/images/LED_OFF.png"));
@@ -159,7 +160,8 @@ void FireIdentifySystem::on_tBtn_Buzzer_clicked()
     {
         //如果开关为关
         ui->tBtn_Buzzer->setStyleSheet("background-color:rgb(115, 210, 22)");
-    }else
+    }
+    else
     {
         //如果开关为开
         ui->tBtn_Buzzer->setStyleSheet("background-color:rgb(204, 0, 0)");
@@ -254,7 +256,10 @@ void FireIdentifySystem::serverDisconnection()
     buffer.open(QIODevice::ReadOnly);
     QPixmap picture;
     picture.loadFromData(array, "jpg");
-    ui->lab_Picture->setPixmap(picture);
+    //将图像适应控件显示
+    QPixmap pix = picture.scaledToHeight(ui->lab_Picture->height());
+    ui->lab_Picture->setPixmap(pix);
+    array.clear();
 }
 
 void FireIdentifySystem::logOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
