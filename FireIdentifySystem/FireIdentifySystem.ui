@@ -198,7 +198,7 @@ color:rgb(252, 233, 79)</string>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,2,1,2,1,4,2,8">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,2,1,2,1,4,2,2,8">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -326,6 +326,13 @@ color:rgb(252, 233, 79)</string>
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>清空Log</string>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,1">

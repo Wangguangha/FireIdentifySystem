@@ -57,7 +57,7 @@ void FireIdentifySystem::InitWindow()
 
     m_UpdatePictrue = new QTimer(this);
     connect(m_UpdatePictrue, SIGNAL(timeout()), this, SLOT(updateTimer_timeout()));
-    m_UpdatePictrue->start(5000);     //每五秒更新一次图像
+    m_UpdatePictrue->start(30000);     //每30秒更新一次图像
 
     //建立tcp连接响应
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(serverNewConnect()));
@@ -118,7 +118,7 @@ void FireIdentifySystem::timer_timeout()
 void FireIdentifySystem::updateTimer_timeout()
 {
     //定时更新图像timeout信号发送
-    this->pictureName = ":/image/images/background.jpeg";
+    //this->pictureName = ":/image/images/background.jpeg";
     QPixmap *pixmap = new QPixmap(pictureName);
     pixmap->scaled(ui->lab_Picture->size(), Qt::KeepAspectRatio);
     ui->lab_Picture->setScaledContents(true);
@@ -230,11 +230,9 @@ void FireIdentifySystem::serverNewConnect()
     tcpSocket = tcpServer->nextPendingConnection();
     if(!tcpSocket)
     {
-        //QMessageBox::information(this, "QT网络通信", "未能成功获取客户端连接！！！");
         qDebug() << "未能成功获取客户端连接！！！";
     }else
     {
-        //QMessageBox::information(this, "QT网络通信", "成功建立连接！！！");
         qDebug() << "成功建立连接！！！";
         connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(serverReadData()));
         connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(serverDisconnection()));
@@ -244,7 +242,40 @@ void FireIdentifySystem::serverNewConnect()
 void FireIdentifySystem::serverReadData()
 {
     //服务器接收图像函数
-    array.append((QByteArray)tcpSocket->readAll());
+    QByteArray buf = tcpSocket->readAll();
+
+    //判断发送的数据是否为文件名
+    if(buf.contains("fileName:"))
+    {
+        this->array.clear();
+        buf = buf.replace("fileName:","");
+        QString fileName(buf);
+        this->pictureName = fileName;
+        qDebug() << "The fileName is:" + this->pictureName;
+    }else if(buf.contains("fileLen:"))
+    {
+        buf = buf.replace("fileLen:","");
+        QString str(buf);
+        this->fileLen = buf.toInt();
+        qDebug() << "The fileLen is:" << this->fileLen;
+    }else
+    {
+        this->array.append(buf);
+
+        if(this->array.size() >= this->fileLen)
+        {
+            QBuffer buffer(&this->array);
+            buffer.open(QIODevice::ReadOnly);
+            QPixmap picture;
+            picture.loadFromData(this->array, "jpg");
+            //将图像适应控件显示
+            QPixmap pix = picture.scaledToHeight(ui->lab_Picture->height());
+            ui->lab_Picture->setPixmap(pix);
+            saveImage(pix);
+
+            this->array.clear();
+        }
+    }
 }
 
 void FireIdentifySystem::serverDisconnection()
@@ -252,14 +283,14 @@ void FireIdentifySystem::serverDisconnection()
     //服务端断开连接
     qDebug() << "与客户端断开连接！！！";
 
-    QBuffer buffer(&array);
-    buffer.open(QIODevice::ReadOnly);
-    QPixmap picture;
-    picture.loadFromData(array, "jpg");
-    //将图像适应控件显示
-    QPixmap pix = picture.scaledToHeight(ui->lab_Picture->height());
-    ui->lab_Picture->setPixmap(pix);
     array.clear();
+}
+
+void FireIdentifySystem::saveImage(QPixmap pixmap)
+{
+    //保存图像到本地
+    qDebug() << "++++++++++" + this->pictureName;
+    pixmap.save("./" + this->pictureName);
 }
 
 void FireIdentifySystem::logOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -286,4 +317,10 @@ void FireIdentifySystem::logOutput(QtMsgType type, const QMessageLogContext &con
     }
     text.append(msg);
     logTextEdit->append(text);
+}
+
+void FireIdentifySystem::on_pushButton_clicked()
+{
+    //清空Log槽函数
+    logTextEdit->clear();
 }
