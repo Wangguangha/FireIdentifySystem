@@ -39,6 +39,8 @@ FORMS    += FireIdentifySystem.ui \
 RESOURCES += \
     icon.qrc
 
+CONFIG += c++11
+
 INCLUDEPATH += /usr/local/include \
                /usr/local/include/opencv \
                /usr/local/include/opencv2

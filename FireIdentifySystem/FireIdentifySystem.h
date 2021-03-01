@@ -8,7 +8,14 @@
 #include <QTextEdit>
 #include <QTimer>
 
+#include <vector>
+using namespace  std;
+
 #define PICTRUE_LEN 24
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+using namespace cv;
 
 namespace Ui {
 class FireIdentifySystem;
@@ -30,6 +37,10 @@ public:
     void showLogOnTextEdit();                   //将日志输出到控件
     void saveImage(QPixmap pixmap);             //保存图像到本地
 
+    //图像处理相关
+    Mat CheckColor(Mat &inImg);
+    void DrawFire(Mat &inputImg,Mat foreImg);
+
 private slots:
     void on_tBtn_Set_clicked();                 //系统设置槽函数
     void timer_timeout();                       //定时更新界面时间
@@ -41,7 +52,7 @@ private slots:
     void serverReadData();                      //服务端读取数据
     void serverDisconnection();                 //服务端断开连接
 
-    void on_pushButton_clicked();
+    void on_pushButton_clicked();               //清空LOG按钮槽函数
 
 private:
     Ui::FireIdentifySystem *ui;
