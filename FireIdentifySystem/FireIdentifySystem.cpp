@@ -22,7 +22,7 @@ bool FireIdentifySystem::LED_Switch = false;
 bool FireIdentifySystem::Buzzer_Switch = false;
 bool FireIdentifySystem::Net_Switch = false;
 int FireIdentifySystem::Warn_Num = 5;
-int FireIdentifySystem::Error_Num = 5;
+int FireIdentifySystem::Error_Num = 6;
 
 static QTextEdit *logTextEdit;              //log输出控件
 
@@ -48,7 +48,8 @@ FireIdentifySystem::~FireIdentifySystem()
 
 void FireIdentifySystem::InitWindow()
 {
-    //初始化界面
+    this->pictureName = "/home/wang/学习/毕设/Qt/images/background_title.png";
+
     timer_timeout();
     updateTimer_timeout();
     m_timer = new QTimer(this);
@@ -118,8 +119,8 @@ void FireIdentifySystem::timer_timeout()
 void FireIdentifySystem::updateTimer_timeout()
 {
     //定时更新图像timeout信号发送
-    //this->pictureName = ":/image/images/background.jpeg";
     QPixmap *pixmap = new QPixmap(pictureName);
+    pixmap->scaledToHeight(ui->lab_Picture->height());
     pixmap->scaled(ui->lab_Picture->size(), Qt::KeepAspectRatio);
     ui->lab_Picture->setScaledContents(true);
     ui->lab_Picture->setPixmap(*pixmap);
@@ -133,6 +134,19 @@ void FireIdentifySystem::on_tBtn_Set_clicked()
     //系统设置按钮槽函数
     Setting *set = new Setting();
     set->show();
+
+    //初始化界面
+    QImage img;
+    img.load(":/images/background.png");
+    ui->lab_Picture->setPixmap(QPixmap::fromImage(img.scaled(ui->lab_Picture->size())));
+}
+
+void FireIdentifySystem::sendSwitch(QString devSwitch)
+{
+    //发送数据到下位机
+    qDebug() << devSwitch;
+    tcpSocket->write(devSwitch.toLatin1().data());
+    tcpSocket->flush();
 }
 
 void FireIdentifySystem::on_tBtn_LED_clicked()
@@ -143,12 +157,14 @@ void FireIdentifySystem::on_tBtn_LED_clicked()
         //如果开关为关
         ui->tBtn_LED->setIcon(QIcon(":/image/images/LED_ON.png"));
         ui->tBtn_LED->setStyleSheet("background-color:rgb(115, 210, 22)");
+        sendSwitch("L1");
     }
     else
     {
         //如果开关为开
         ui->tBtn_LED->setIcon(QIcon(":/image/images/LED_OFF.png"));
         ui->tBtn_LED->setStyleSheet("background-color:rgb(204, 0, 0)");
+        sendSwitch("L0");
     }
     LED_Switch = !LED_Switch;
 }
@@ -160,11 +176,13 @@ void FireIdentifySystem::on_tBtn_Buzzer_clicked()
     {
         //如果开关为关
         ui->tBtn_Buzzer->setStyleSheet("background-color:rgb(115, 210, 22)");
+        sendSwitch("B1");
     }
     else
     {
         //如果开关为开
         ui->tBtn_Buzzer->setStyleSheet("background-color:rgb(204, 0, 0)");
+        sendSwitch("B0");
     }
     Buzzer_Switch = !Buzzer_Switch;
 }
@@ -172,16 +190,16 @@ void FireIdentifySystem::on_tBtn_Buzzer_clicked()
 void FireIdentifySystem::on_tBtn_Network_clicked()
 {
     //网络按钮槽函数
-    if(false == Net_Switch)
-    {
-        //如果开关为关
-        ui->tBtn_Network->setStyleSheet("background-color:rgb(115, 210, 22)");
-    }else
-    {
-        //如果开关为开
-        ui->tBtn_Network->setStyleSheet("background-color:rgb(204, 0, 0)");
-    }
-    Net_Switch = !Net_Switch;
+//    if(false == Net_Switch)
+//    {
+//        //如果开关为关
+//        ui->tBtn_Network->setStyleSheet("background-color:rgb(115, 210, 22)");
+//    }else
+//    {
+//        //如果开关为开
+//        ui->tBtn_Network->setStyleSheet("background-color:rgb(204, 0, 0)");
+//    }
+//    Net_Switch = !Net_Switch;
 }
 
 void FireIdentifySystem::openDataBase()
@@ -191,20 +209,20 @@ void FireIdentifySystem::openDataBase()
     db.setDatabaseName("/home/wang/学习/毕设/Qt/dbFile/record.db");
     if (!db.open())
     {
-        QMessageBox::critical(NULL, QObject::tr("Collection"), QObject::tr("数据库连接失败！"));
+        qDebug() << "数据库连接失败！";
+    }else
+    {
+        qDebug() << "数据库打开成功!" << endl;
     }
-
-    //insertData("insert into messagelist values(1,'2016-01-22 08:45:50',1,1)");
 }
 
 void FireIdentifySystem::insertData(QString strList)
 {
     //数据库插入
     QSqlQuery sqlQuery = QSqlQuery(db);
-
     if(!sqlQuery.exec(strList))
     {
-        QMessageBox::critical(NULL, QObject::tr("Collection"), QObject::tr("数据库插入失败！"));
+        qDebug() << "数据库插入失败！";
     }
 }
 
@@ -214,12 +232,10 @@ void FireIdentifySystem::startNetwork()
     int port = 8888;                //Tcp端口号为8888
     if(!tcpServer->listen(QHostAddress::Any, port))
     {
-        //QMessageBox::information(this, "QT网络故障", "服务器端监听失败！！！");
         qDebug() << "服务器端监听失败！！！";
         return;
     }else
     {
-        //QMessageBox::information(this, "QT网络通信", "服务器端监听成功！！！");
         qDebug() << "服务器端监听成功！！！";
     }
 }
@@ -273,6 +289,10 @@ void FireIdentifySystem::serverReadData()
             ui->lab_Picture->setPixmap(pix);
             saveImage(pix);
 
+            //火焰检测开关
+            //Mat inputImg = imread("/home/wang/huo.jpeg",1);
+            //CheckColor(inputImg);
+
             this->array.clear();
         }
     }
@@ -289,8 +309,7 @@ void FireIdentifySystem::serverDisconnection()
 void FireIdentifySystem::saveImage(QPixmap pixmap)
 {
     //保存图像到本地
-    qDebug() << "++++++++++" + this->pictureName;
-    pixmap.save("./" + this->pictureName);
+    pixmap.save("./" + this->pictureName, "JPG");
 }
 
 void FireIdentifySystem::logOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -323,11 +342,7 @@ void FireIdentifySystem::on_pushButton_clicked()
 {
     //清空Log槽函数
     logTextEdit->clear();
-    Mat inputImg = imread("/home/wang/huo.jpeg",1);
-
-    CheckColor(inputImg);
 }
-
 
 Mat FireIdentifySystem::CheckColor(Mat &inImg)
 {
@@ -376,6 +391,23 @@ Mat FireIdentifySystem::CheckColor(Mat &inImg)
     return fireImg;
 }
 
+void FireIdentifySystem::LabelDisplayMat(QLabel *label, cv::Mat &mat)
+{
+    //将Mat显示到QLabel
+    cv::Mat Rgb;
+    QImage Img;
+    if (mat.channels() == 3)//RGB Img
+    {
+        cv::cvtColor(mat, Rgb, CV_BGR2RGB);//颜色空间转换
+        Img = QImage((const uchar*)(Rgb.data), Rgb.cols, Rgb.rows, Rgb.cols * Rgb.channels(), QImage::Format_RGB888);
+    }
+    else//Gray Img
+    {
+        Img = QImage((const uchar*)(mat.data), mat.cols, mat.rows, mat.cols*mat.channels(), QImage::Format_Indexed8);
+    }
+    label->setPixmap(QPixmap::fromImage(Img));
+}
+
 void FireIdentifySystem::DrawFire(Mat &inputImg,Mat foreImg)
 {
     vector<vector<Point>> contours_set;//保存轮廓提取后的点集及拓扑关系
@@ -396,10 +428,25 @@ void FireIdentifySystem::DrawFire(Mat &inputImg,Mat foreImg)
 
         if (rect.area()> 0)
         {
+            if(rect.area() > 255)
+            {
+                //火焰区域大于255才视为真正发生火灾，提高准确率
+                QSqlQuery query = QSqlQuery(db);
 
+                query.exec("select count(*) from messagelist");
+                query.next();
+                listCount = query.value(0).toInt();
+
+                QString strValue = QString("insert into messagelist values(%1,'%2',1,1)")
+                        .arg(listCount+3)
+                        .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+                qDebug() << strValue;
+                query.exec(strValue);
+                sendSwitch("B1");
+                sendSwitch("L1");
+            }
             rectangle(inputImg,rect,Scalar(0,255,0));
             ++ iter;
-
         }
         else
         {
@@ -407,7 +454,6 @@ void FireIdentifySystem::DrawFire(Mat &inputImg,Mat foreImg)
         }
     }
 
-    namedWindow("showFire", CV_WINDOW_NORMAL);
-    imshow("showFire",inputImg);
+    LabelDisplayMat(ui->lab_Picture, inputImg);
     waitKey(1000);
 }

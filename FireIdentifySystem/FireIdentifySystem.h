@@ -2,11 +2,13 @@
 #define FIREIDENTIFYSYSTEM_H
 
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QMainWindow>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTextEdit>
 #include <QTimer>
+#include <QLabel>
 
 #include <vector>
 using namespace  std;
@@ -34,8 +36,11 @@ public:
     void openDataBase();                        //打开数据库
     void insertData(QString strData);           //数据库插入
     void startNetwork();                        //开启网络
+    void sendSwitch(QString devSwitch);         //发送硬件开关
     void showLogOnTextEdit();                   //将日志输出到控件
     void saveImage(QPixmap pixmap);             //保存图像到本地
+    void LabelDisplayMat(QLabel *label,
+                         cv::Mat &mat);         //将Mat显示到QLabel
 
     //图像处理相关
     Mat CheckColor(Mat &inImg);
@@ -70,6 +75,7 @@ private:
     QByteArray array;                           //下位机传输图像
     QString pictureName;                        //展示图像文件名
     int fileLen;                                //图像长度
+    int listCount;                              //数据库总长
 
 public:                                         //日志输出相关
     static void logOutput(QtMsgType type,

@@ -106,7 +106,10 @@
 border-radius: 15px</string>
                </property>
                <property name="text">
-                <string>图片</string>
+                <string/>
+               </property>
+               <property name="scaledContents">
+                <bool>false</bool>
                </property>
               </widget>
              </item>

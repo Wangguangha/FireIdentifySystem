@@ -10,7 +10,9 @@
         <file>../images/Warning.png</file>
         <file>../images/Wifi.png</file>
         <file>../images/Fire.png</file>
-        <file>../images/background.jpeg</file>
         <file>../images/Exit.png</file>
+        <file>../../../../test/222.jpg</file>
+        <file>../images/huo.jpeg</file>
+        <file>../images/background_title.png</file>
     </qresource>
 </RCC>
